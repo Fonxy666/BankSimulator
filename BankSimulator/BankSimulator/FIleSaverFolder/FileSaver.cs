@@ -8,7 +8,7 @@ namespace BankSimulator.FileSaverFolder
         {
             string userData = user.ToString();
 
-            string filePath = $"{user.UserId}-{user.FirstName}-{user.SecondName}.txt";
+            string filePath = $"{user.UserId}-{user.FirstName}-{user.LastName}.txt";
 
             File.WriteAllText(filePath, userData);
 

@@ -1,4 +1,5 @@
-﻿using BankSimulator.FileSaverFolder;
+﻿using BankSimulator.Database;
+using BankSimulator.FileSaverFolder;
 using BankSimulator.View.UiComponents;
 
 namespace BankSimulator.View
@@ -40,7 +41,8 @@ namespace BankSimulator.View
             }
             else if (loginOrRegister == 2)
             {
-                loginUi.Login();
+                MongoDbConnection connection = new MongoDbConnection();
+                connection.Login("Viktor", "Poszt");
             }
             this.ShowMenu();
             int inputCode = this.HandleInput();

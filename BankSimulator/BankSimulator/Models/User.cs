@@ -1,10 +1,10 @@
 ﻿namespace BankSimulator.Models
 {
-    internal class User(string firstName, string? middleName, string secondName, Address address, int pin)
+    internal class User(string firstName, string? middleName, string lastName, Address address, int pin)
     {
         public string FirstName { get; init; } = firstName;
         public string? MiddleName { get; init; } = middleName;
-        public string SecondName { get; init; } = secondName;
+        public string LastName { get; init; } = lastName;
         public Address Address { get; set; } = address;
         public Guid UserId { get; init; } = Guid.NewGuid();
         public int PIN { get; private set; } = pin;
@@ -43,7 +43,7 @@
             return $"User ID: {UserId}\n" +
                    $"First Name: {FirstName}\n" +
                    $"Middle Name: {MiddleName ?? "N/A"}\n" +
-                   $"Second Name: {SecondName}\n" +
+                   $"Second Name: {LastName}\n" +
                    $"Address: {Address.ToString()}\n" +
                    $"PIN: {PIN}\n" +
                    $"Balance: {Balance}\n";

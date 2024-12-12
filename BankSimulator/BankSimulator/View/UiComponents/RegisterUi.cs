@@ -1,4 +1,5 @@
-﻿using BankSimulator.FileSaverFolder;
+﻿using BankSimulator.Database;
+using BankSimulator.FileSaverFolder;
 using BankSimulator.Models;
 
 namespace BankSimulator.View.UiComponents
@@ -9,14 +10,16 @@ namespace BankSimulator.View.UiComponents
         {
             string[] names = getNamesMethod();
             Address address = GetAddress();
+            int pinCode = GetPinCode();
             User newUser = new User(
                 names[0],
                 names.Length > 2 ? names[1] : null,
                 names.Length > 2 ? names[2] : names[1],
                 address,
-                6666
+                pinCode
                 );
-            fileSaver.SaveRegistration(newUser);
+            MongoDbConnection mongoDb = new MongoDbConnection();
+            mongoDb.SaveNewUser( newUser );
         }
 
         private Address GetAddress()
@@ -99,6 +102,35 @@ namespace BankSimulator.View.UiComponents
                 }
             }
             return houseNumber;
+        }
+
+        private int GetPinCode()
+        {
+            int pinCode = 0;
+            bool successfulParse = false;
+
+            Console.Write("Pin code:");
+            while (!successfulParse)
+            {
+                string input = Console.ReadLine();
+
+                if (int.TryParse(input, out pinCode))
+                {
+                    if (input.Length == 4)
+                    {
+                        successfulParse = true;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Wrong input, please use only 4 digits.");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Invalid input. Please enter a numeric value.");
+                }
+            }
+            return pinCode;
         }
     }
 }
