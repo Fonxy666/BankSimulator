@@ -1,27 +1,19 @@
-﻿using BankSimulator.FileSaverFolder;
-using BankSimulator.View;
-using dotenv.net;
+﻿using BankSimulator.View;
 
 namespace BankSimulator
 {
     internal class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
-            FileSaver filesaver = GetFileSaver();
-            Ui ui = GetUi(filesaver);
+            Ui ui = GetUi();
 
-            ui.Run();
+            await ui.Run();
         }
 
-        private static Ui GetUi(FileSaver fileSaver)
+        private static Ui GetUi()
         {
-            return new Ui(fileSaver);
-        }
-
-        private static FileSaver GetFileSaver()
-        {
-            return new FileSaver();
+            return new Ui();
         }
     }
 }

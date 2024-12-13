@@ -2,9 +2,10 @@
 {
     internal class LoginUi(Func<string[]> getNamesMethod)
     {
-        public void Login()
+        public async Task<bool> Login()
         {
             string[] names = getNamesMethod();
+            return true;
         }
     }
 }

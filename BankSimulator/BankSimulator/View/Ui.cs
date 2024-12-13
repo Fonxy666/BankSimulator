@@ -1,21 +1,16 @@
 ﻿using BankSimulator.Database;
-using BankSimulator.FileSaverFolder;
 using BankSimulator.View.UiComponents;
 
 namespace BankSimulator.View
 {
     internal class Ui
     {
-        private static LoginUi loginUi;
+        private LoginUi loginUi;
         private RegisterUi registerUi;
 
-        private readonly FileSaver fileSaver;
-
-        public Ui(FileSaver fileSaver)
+        public Ui()
         {
-            this.fileSaver = fileSaver;
-
-            registerUi = new RegisterUi(new Func<string[]>(GetNames), this.fileSaver);
+            registerUi = new RegisterUi(new Func<string[]>(GetNames));
 
             loginUi = new LoginUi(new Func<string[]>(GetNames));
         }
@@ -32,18 +27,35 @@ namespace BankSimulator.View
             return middleName == null ? [firstName, secondName] : [firstName, middleName, secondName];
         }
 
-        public void Run()
+        public async Task Run()
         {
-            int loginOrRegister = this.LoginOrRegister();
-            if (loginOrRegister == 1)
+            while (true)
             {
-                registerUi.Register();
+                int loginOrRegister = this.LoginOrRegister();
+
+                if (loginOrRegister == 1)
+                {
+                    await registerUi.Register();
+                    continue;
+                }
+                else if (loginOrRegister == 2)
+                {
+                    bool loginSuccess = await loginUi.Login();
+                    if (loginSuccess)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Login failed. Try again.");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Invalid option. Please try again.");
+                }
             }
-            else if (loginOrRegister == 2)
-            {
-                MongoDbConnection connection = new MongoDbConnection();
-                connection.Login("Viktor", "Poszt");
-            }
+
             this.ShowMenu();
             int inputCode = this.HandleInput();
         }

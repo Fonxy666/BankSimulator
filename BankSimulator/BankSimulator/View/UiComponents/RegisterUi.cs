@@ -1,12 +1,11 @@
 ﻿using BankSimulator.Database;
-using BankSimulator.FileSaverFolder;
 using BankSimulator.Models;
 
 namespace BankSimulator.View.UiComponents
 {
-    internal class RegisterUi(Func<string[]> getNamesMethod, FileSaver fileSaver)
+    internal class RegisterUi(Func<string[]> getNamesMethod)
     {
-        public void Register()
+        public async Task<bool> Register()
         {
             string[] names = getNamesMethod();
             Address address = GetAddress();
@@ -19,7 +18,16 @@ namespace BankSimulator.View.UiComponents
                 pinCode
                 );
             MongoDbConnection mongoDb = new MongoDbConnection();
-            mongoDb.SaveNewUser( newUser );
+            Console.WriteLine("Attempting to save the user to the database...");
+            bool isSaved = await mongoDb.SaveNewUser(newUser);
+            if (!isSaved)
+            {
+                Console.WriteLine("There was an error saving the new User to the database.");
+                return false;
+            }
+
+            Console.WriteLine("Succesful registration.");
+            return true;
         }
 
         private Address GetAddress()
