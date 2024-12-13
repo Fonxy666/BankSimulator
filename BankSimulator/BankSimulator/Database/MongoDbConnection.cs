@@ -23,7 +23,7 @@ namespace BankSimulator.Database
                     { "First name", user.FirstName },
                     { "Middle name", user.MiddleName != null ? user.MiddleName : BsonNull.Value },
                     { "Last name", user.LastName },
-                    { "Pin", user.PIN },
+                    { "Pin", user.HashedPin },
                     { "Balance", user.Balance },
                     {
                         "Address", new BsonDocument

@@ -10,12 +10,13 @@ namespace BankSimulator.View.UiComponents
             string[] names = getNamesMethod();
             Address address = GetAddress();
             int pinCode = GetPinCode();
+            string hashedPin = BCrypt.Net.BCrypt.HashPassword(pinCode.ToString());
             User newUser = new User(
                 names[0],
                 names.Length > 2 ? names[1] : null,
                 names.Length > 2 ? names[2] : names[1],
                 address,
-                pinCode
+                hashedPin
                 );
             MongoDbConnection mongoDb = new MongoDbConnection();
             Console.WriteLine("Attempting to save the user to the database...");
