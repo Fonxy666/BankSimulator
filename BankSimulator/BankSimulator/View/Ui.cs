@@ -1,4 +1,4 @@
-﻿using BankSimulator.Database;
+﻿using BankSimulator.Services;
 using BankSimulator.View.UiComponents;
 
 namespace BankSimulator.View
@@ -8,11 +8,11 @@ namespace BankSimulator.View
         private LoginUi loginUi;
         private RegisterUi registerUi;
 
-        public Ui()
+        public Ui(UserService userService)
         {
-            registerUi = new RegisterUi(new Func<string[]>(GetNames));
+            registerUi = new RegisterUi(new Func<string[]>(GetNames), userService);
 
-            loginUi = new LoginUi(new Func<string[]>(GetNames));
+            loginUi = new LoginUi(new Func<string[]>(GetNames), userService);
         }
 
         public static string[] GetNames()

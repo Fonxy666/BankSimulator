@@ -1,4 +1,6 @@
-﻿using BankSimulator.View;
+﻿using BankSimulator.Database;
+using BankSimulator.Services;
+using BankSimulator.View;
 
 namespace BankSimulator
 {
@@ -6,14 +8,26 @@ namespace BankSimulator
     {
         static async Task Main(string[] args)
         {
-            Ui ui = GetUi();
+            MongoDbConnection connection = GetMongoDbConnection();
+            UserService userService = GetUserService(connection);
+            Ui ui = GetUi(userService);
 
             await ui.Run();
         }
 
-        private static Ui GetUi()
+        private static Ui GetUi(UserService userService)
         {
-            return new Ui();
+            return new Ui(userService);
+        }
+
+        private static UserService GetUserService(MongoDbConnection mongoDbConnection)
+        {
+            return new UserService(mongoDbConnection);
+        }
+
+        private static MongoDbConnection GetMongoDbConnection()
+        {
+            return new MongoDbConnection();
         }
     }
 }

@@ -7,6 +7,17 @@ namespace BankSimulator.Database
 {
     internal class MongoDbConnection
     {
+        public async Task<IMongoCollection<BsonDocument>> GetUserTable()
+        {
+            DotEnv.Load();
+            string connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING");
+            MongoClient client = new MongoClient(connectionString);
+            IMongoDatabase database = client.GetDatabase("Users");
+            IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("Users");
+
+            return collection;
+        }
+
         public async Task<bool> SaveNewUser(User user)
         {
             try

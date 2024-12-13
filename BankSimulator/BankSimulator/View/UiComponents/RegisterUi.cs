@@ -1,9 +1,9 @@
-﻿using BankSimulator.Database;
-using BankSimulator.Models;
+﻿using BankSimulator.Models;
+using BankSimulator.Services;
 
 namespace BankSimulator.View.UiComponents
 {
-    internal class RegisterUi(Func<string[]> getNamesMethod)
+    internal class RegisterUi(Func<string[]> getNamesMethod, UserService userService)
     {
         public async Task<bool> Register()
         {
@@ -18,9 +18,7 @@ namespace BankSimulator.View.UiComponents
                 address,
                 hashedPin
                 );
-            MongoDbConnection mongoDb = new MongoDbConnection();
-            Console.WriteLine("Attempting to save the user to the database...");
-            bool isSaved = await mongoDb.SaveNewUser(newUser);
+            bool isSaved = await userService.SaveNewUser(newUser);
             if (!isSaved)
             {
                 Console.WriteLine("There was an error saving the new User to the database.");
