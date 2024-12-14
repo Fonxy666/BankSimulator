@@ -8,12 +8,74 @@ namespace BankSimulator.View.UiComponents
     {
         public async Task<bool> Login()
         {
-            string[] names = getNamesMethod();
-            int pinCode = GetPinCode();
+            int loginType = DecideHowToLogin();
 
-            bool result = await userService.Login(names[0], names[1], pinCode);
-            Console.WriteLine(result);
+            if (loginType == 1)
+            {
+                string bankCardNumber = GetCardNumber();
+                int pinCode = GetPinCode();
+                return await userService.LoginWithCard(bankCardNumber, pinCode);
+            }
+            else if (loginType == 2)
+            {
+                string[] names = getNamesMethod();
+                int pinCode = GetPinCode();
+                return await userService.LoginWithNames(names[0], names[1], pinCode);
+            }
+
             return true;
+        }
+
+        public int DecideHowToLogin()
+        {
+            int loginType = 0;
+            bool successfulParse = false;
+
+            Console.Write("Choose how to log in.\nPress '1' to log in via card number\nPress '2' to log in via name.");
+            while (!successfulParse)
+            {
+                string input = Console.ReadLine();
+
+                if (int.TryParse(input, out loginType))
+                {
+                    if (loginType == 1 || loginType == 2)
+                    {
+                        successfulParse = true;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Wrong input, please use digits.");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Invalid input. Please enter a numeric value.");
+                }
+            }
+
+            return loginType;
+        }
+
+        private string GetCardNumber()
+        {
+            string input = "";
+            bool successfulParse = false;
+
+            Console.Write("Card number:");
+            while (!successfulParse)
+            {
+                input = Console.ReadLine();
+
+                if (input.Length == 19)
+                {
+                    successfulParse = true;
+                }
+                else
+                {
+                    Console.WriteLine("Wrong input, please use 4x4 digits with (-)s.");
+                }
+            }
+            return input;
         }
 
         private int GetPinCode()

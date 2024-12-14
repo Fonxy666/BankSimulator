@@ -1,4 +1,5 @@
-﻿using BankSimulator.Services;
+﻿using System.Linq;
+using BankSimulator.Services;
 using BankSimulator.View.UiComponents;
 
 namespace BankSimulator.View
@@ -8,21 +9,21 @@ namespace BankSimulator.View
         private LoginUi loginUi;
         private RegisterUi registerUi;
 
-        public Ui(UserService userService)
+        public Ui(UserService userService, CardService cardService, AddressService addressService)
         {
-            registerUi = new RegisterUi(new Func<string[]>(GetNames), userService);
+            registerUi = new RegisterUi(new Func<string[]>(GetNames), userService, cardService, addressService);
 
             loginUi = new LoginUi(new Func<string[]>(GetNames), userService);
         }
 
         public static string[] GetNames()
         {
-            Console.WriteLine("Please give us your full name, first your First Name, and use space(s) between Names. If you have a middle name, simply use space between names.");
+            Console.WriteLine("Please give us your full name, first your First Name, and use space(s) between Names.\nIf you have a middle name, simply use space between names.");
             string input = Console.ReadLine();
             string[] nameParts = input.Split(' ');
 
             string firstName = nameParts[0];
-            string? middleName = nameParts.Length > 2 ? nameParts[1] : null;
+            string? middleName = nameParts.Length > 2 ? string.Join(", ", nameParts.Skip(1).Take(nameParts.Length - 2)) : null;
             string secondName = nameParts.Length > 1 ? nameParts[nameParts.Length - 1] : nameParts[0];
             return middleName == null ? [firstName, secondName] : [firstName, middleName, secondName];
         }
@@ -43,6 +44,7 @@ namespace BankSimulator.View
                     bool loginSuccess = await loginUi.Login();
                     if (loginSuccess)
                     {
+                        Console.WriteLine("Success");
                         break;
                     }
                     else

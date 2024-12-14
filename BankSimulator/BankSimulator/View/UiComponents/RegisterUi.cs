@@ -3,25 +3,41 @@ using BankSimulator.Services;
 
 namespace BankSimulator.View.UiComponents
 {
-    internal class RegisterUi(Func<string[]> getNamesMethod, UserService userService)
+    internal class RegisterUi(Func<string[]> getNamesMethod, UserService userService, CardService cardService, AddressService addressService)
     {
         public async Task<bool> Register()
         {
             string[] names = getNamesMethod();
-            Address address = GetAddress();
-            int pinCode = GetPinCode();
-            string hashedPin = BCrypt.Net.BCrypt.HashPassword(pinCode.ToString());
             User newUser = new User(
                 names[0],
                 names.Length > 2 ? names[1] : null,
-                names.Length > 2 ? names[2] : names[1],
-                address,
-                hashedPin
+                names.Length > 2 ? names[2] : names[1]
                 );
-            bool isSaved = await userService.SaveNewUser(newUser);
-            if (!isSaved)
+            bool userIsSaved = await userService.SaveNewUser(newUser);
+            if (!userIsSaved)
             {
                 Console.WriteLine("There was an error saving the new User to the database.");
+                return false;
+            }
+
+            int pinCode = GetPinCode();
+            string hashedPin = BCrypt.Net.BCrypt.HashPassword(pinCode.ToString());
+            Card newCard = new Card(
+                newUser.UserId,
+                hashedPin
+                );
+            bool cardIsSaved = await cardService.SaveUserCard(newCard);
+            if (!cardIsSaved)
+            {
+                Console.WriteLine("There was an error saving the new Card to the database.");
+                return false;
+            }
+
+            Address address = GetAddress(newUser.UserId);
+            bool addressIsSaved = await addressService.SaveUserAddress(address);
+            if (!addressIsSaved)
+            {
+                Console.WriteLine("There was an error saving the new Address to the database.");
                 return false;
             }
 
@@ -29,7 +45,7 @@ namespace BankSimulator.View.UiComponents
             return true;
         }
 
-        private Address GetAddress()
+        private Address GetAddress(Guid userId)
         {
             Console.WriteLine("Please give us your Address:");
             int zipCode = GetZipCode();
@@ -37,7 +53,7 @@ namespace BankSimulator.View.UiComponents
             string city = GetCity();
             string street = GetStreet();
             int houseNumber = GetHouseNumber();
-            Address address = new Address(zipCode, country, city, street, houseNumber);
+            Address address = new Address(userId, zipCode, country, city, street, houseNumber);
             return address;
         }
 
