@@ -1,6 +1,4 @@
 ﻿using BankSimulator.Services;
-using MongoDB.Bson.IO;
-using Newtonsoft.Json;
 
 namespace BankSimulator.View.UiComponents
 {
@@ -20,7 +18,9 @@ namespace BankSimulator.View.UiComponents
             {
                 string[] names = getNamesMethod();
                 int pinCode = GetPinCode();
-                return await userService.LoginWithNames(names[0], names[1], pinCode);
+                return names.Length > 2 ?
+                    await userService.LoginWithNames(names[0], names[2], pinCode, names[1]) :
+                    await userService.LoginWithNames(names[0], names[1], pinCode, null);
             }
 
             return true;
@@ -31,7 +31,7 @@ namespace BankSimulator.View.UiComponents
             int loginType = 0;
             bool successfulParse = false;
 
-            Console.Write("Choose how to log in.\nPress '1' to log in via card number\nPress '2' to log in via name.");
+            Console.WriteLine("Choose how to log in.\nPress '1' to log in via card number\nPress '2' to log in via name.");
             while (!successfulParse)
             {
                 string input = Console.ReadLine();

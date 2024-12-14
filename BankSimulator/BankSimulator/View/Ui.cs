@@ -23,7 +23,7 @@ namespace BankSimulator.View
             string[] nameParts = input.Split(' ');
 
             string firstName = nameParts[0];
-            string? middleName = nameParts.Length > 2 ? string.Join(", ", nameParts.Skip(1).Take(nameParts.Length - 2)) : null;
+            string? middleName = nameParts.Length > 2 ? string.Join(" ", nameParts.Skip(1).Take(nameParts.Length - 2)) : null;
             string secondName = nameParts.Length > 1 ? nameParts[nameParts.Length - 1] : nameParts[0];
             return middleName == null ? [firstName, secondName] : [firstName, middleName, secondName];
         }

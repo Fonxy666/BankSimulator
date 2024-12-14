@@ -31,7 +31,7 @@ namespace BankSimulator.Services
             }
         }
 
-        public async Task<bool> LoginWithNames(string firstName, string lastName, int pinCode)
+        public async Task<bool> LoginWithNames(string firstName, string lastName, int pinCode, string? middleName)
         {
             try
             {
@@ -40,11 +40,19 @@ namespace BankSimulator.Services
                 FilterDefinition<BsonDocument> filteredByFirstName = Builders<BsonDocument>.Filter.Eq("firstName", firstName);
                 FilterDefinition<BsonDocument> filteredByLastName = Builders<BsonDocument>.Filter.Eq("lastName", lastName);
 
-                FilterDefinition<BsonDocument> combinedFilter = Builders<BsonDocument>.Filter.And(filteredByFirstName, filteredByLastName);
+                var filters = new List<FilterDefinition<BsonDocument>> { filteredByFirstName, filteredByLastName };
 
-                var result = await userTable.Find(combinedFilter).FirstOrDefaultAsync();
+                if (!string.IsNullOrEmpty(middleName))
+                {
+                    FilterDefinition<BsonDocument> filteredByMiddleName = Builders<BsonDocument>.Filter.Eq("middleName", middleName);
+                    filters.Add(filteredByMiddleName);
+                }
 
-                if (result == null)
+                FilterDefinition<BsonDocument> combinedFilter = Builders<BsonDocument>.Filter.And(filters);
+
+                var user = await userTable.Find(combinedFilter).FirstOrDefaultAsync();
+
+                if (user == null)
                 {
                     Console.WriteLine("User not found.");
                     return false;
@@ -52,7 +60,7 @@ namespace BankSimulator.Services
 
                 IMongoCollection<BsonDocument> cardTable = await mongoDbConnection.GetCardTable();
 
-                FilterDefinition<BsonDocument> filterByUserId = Builders<BsonDocument>.Filter.Eq("userId", result["_id"]);
+                FilterDefinition<BsonDocument> filterByUserId = Builders<BsonDocument>.Filter.Eq("userId", user["_id"]);
                 var cardResult = await cardTable.Find(filterByUserId).FirstOrDefaultAsync();
 
                 string storedHashedPin = cardResult["pin"].AsString;
