@@ -106,16 +106,6 @@ namespace BankSimulator.View.UiComponents
             }
             return pinCode;
         }
-
-        public void SaveUserSession(string userId)
-        {
-            string SessionFile = "userSession.json";
-
-            var userSession = new UserSession { UserId = userId };
-            string json = Newtonsoft.Json.JsonConvert.SerializeObject(userSession);
-            File.WriteAllText(SessionFile, json);
-            Console.WriteLine("User logged in and session saved.");
-        }
     }
 
     public class UserSession

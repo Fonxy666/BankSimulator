@@ -8,9 +8,17 @@ namespace BankSimulator.View
     {
         private LoginUi loginUi;
         private RegisterUi registerUi;
+        private UserService userService;
+        private CardService cardService;
+        private AddressService addressService;
+        private bool appRunning = true;
+        private Guid? userId = GetUserIdFromFile();
 
         public Ui(UserService userService, CardService cardService, AddressService addressService)
         {
+            this.userService = userService;
+            this.cardService = cardService;
+            this.addressService = addressService;
             registerUi = new RegisterUi(new Func<string[]>(GetNames), userService, cardService, addressService);
 
             loginUi = new LoginUi(new Func<string[]>(GetNames), userService);
@@ -30,36 +38,61 @@ namespace BankSimulator.View
 
         public async Task Run()
         {
-            while (true)
+            while (appRunning)
             {
-                int loginOrRegister = this.LoginOrRegister();
-
-                if (loginOrRegister == 1)
+                if (!await EnsureLoggedInAsync())
                 {
-                    await registerUi.Register();
                     continue;
                 }
-                else if (loginOrRegister == 2)
+                await ShowMainMenuAsync();
+            }
+        }
+
+        private async Task<bool> EnsureLoggedInAsync()
+        {
+            if (userId == null)
+            {
+                bool loggedIn = await FirstMenuStep();
+                if (!loggedIn)
                 {
-                    bool loginSuccess = await loginUi.Login();
-                    if (loginSuccess)
-                    {
-                        Console.WriteLine("Success");
-                        break;
-                    }
-                    else
-                    {
-                        Console.WriteLine("Login failed. Try again.");
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("Invalid option. Please try again.");
+                    return false;
                 }
             }
 
-            this.ShowMenu();
-            int inputCode = this.HandleInput();
+            return true;
+        }
+
+        private async Task ShowMainMenuAsync()
+        {
+            while (true)
+            {
+                ShowMenu();
+                int inputCode = HandleInput();
+
+                switch (inputCode)
+                {
+                    case 1:
+                        decimal? balance = await cardService.GetBalance(userId.ToString());
+                        if (balance == null)
+                        {
+                            Console.WriteLine("There was an error getting the balance.");
+                        }
+                        Console.WriteLine($"Your balance is: {balance}");
+                        break;
+                    case 2:
+                        cardService.AddToBalance(userId.ToString(), 20);
+                        break;
+                    case 6:
+                        ClearUserSession();
+                        return;
+                    case 7:
+                        ExitApp();
+                        return;
+                    default:
+                        Console.WriteLine("Invalid choice. Please try again.");
+                        break;
+                }
+            }
         }
 
         private int LoginOrRegister()
@@ -71,17 +104,18 @@ namespace BankSimulator.View
             {
                 Console.WriteLine("1. Register");
                 Console.WriteLine("2. Login");
+                Console.WriteLine("3. Exit");
                 string input = Console.ReadLine();
 
                 if (int.TryParse(input, out parsedInput))
                 {
-                    if (parsedInput == 1 || parsedInput == 2)
+                    if (parsedInput == 1 || parsedInput == 2 || parsedInput == 3)
                     {
                         isValidInput = true;
                     }
                     else
                     {
-                        Console.WriteLine("Wrong Input, please use numbers from 1 or 2.");
+                        Console.WriteLine("Wrong Input, please use numbers from 1, 2 or 3.");
                     }
                 }
                 else
@@ -99,7 +133,8 @@ namespace BankSimulator.View
             Console.WriteLine("3. Withdraw Money");
             Console.WriteLine("4. Change Pin");
             Console.WriteLine("5. Check transaction history");
-            Console.WriteLine("6. Exit");
+            Console.WriteLine("6. Logout");
+            Console.WriteLine("7. Exit");
         }
 
         private int HandleInput()
@@ -114,7 +149,7 @@ namespace BankSimulator.View
 
                 if (int.TryParse(input, out parsedInput))
                 {
-                    if (parsedInput >= 1 && parsedInput <= 6)
+                    if (parsedInput >= 1 && parsedInput <= 7)
                     {
                         isValidInput = true;
                     }
@@ -131,6 +166,88 @@ namespace BankSimulator.View
 
             Console.WriteLine($"You entered a valid number: {parsedInput}");
             return parsedInput;
+        }
+
+        private static Guid? GetUserIdFromFile()
+        {
+            string filePath = "UserId.txt";
+            try
+            {
+                if (File.Exists(filePath))
+                {
+                    string fileContent = File.ReadAllText(filePath);
+                    if (Guid.TryParse(fileContent, out Guid userId))
+                    {
+                        Console.WriteLine($"User ID {userId} loaded from {filePath}.");
+                        return userId;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Invalid user ID format in the file.");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine($"File {filePath} does not exist.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An error occurred while reading the user ID: {ex.Message}");
+            }
+
+            return null;
+        }
+
+        private void ClearUserSession()
+        {
+            File.Delete("UserId.txt");
+            Console.WriteLine("You logged out.");
+        }
+
+        private void ExitApp()
+        {
+            ClearUserSession();
+            Console.WriteLine("Exiting the application...");
+            Environment.Exit(0);
+        }
+
+        private async Task<bool> FirstMenuStep()
+        {
+            bool loggedIn = false;
+            int loginOrRegister = this.LoginOrRegister();
+
+            if (loginOrRegister == 1)
+            {
+                await registerUi.Register();
+                return loggedIn;
+            }
+            else if (loginOrRegister == 2)
+            {
+                bool loginSuccess = await loginUi.Login();
+                if (loginSuccess)
+                {
+                    Console.WriteLine("Success");
+                    loggedIn = true;
+                    return loggedIn;
+                }
+                else
+                {
+                    Console.WriteLine("Login failed. Try again.");
+                    return loggedIn;
+                }
+            }
+            else if (loginOrRegister == 3)
+            {
+                ExitApp();
+                appRunning = false;
+            }
+            else
+            {
+                Console.WriteLine("Invalid option. Please try again.");
+            }
+
+            return loggedIn;
         }
     }
 }

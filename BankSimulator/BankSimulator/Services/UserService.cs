@@ -73,6 +73,8 @@ namespace BankSimulator.Services
                     return false;
                 }
 
+                SaveUserIdToFile(user["_id"].AsString);
+
                 return true;
             }
             catch (Exception ex)
@@ -90,15 +92,15 @@ namespace BankSimulator.Services
 
                 FilterDefinition<BsonDocument> filterByCardNumber = Builders<BsonDocument>.Filter.Eq("cardNumber", cardNumber);
 
-                var result = await userTable.Find(filterByCardNumber).FirstOrDefaultAsync();
+                var user = await userTable.Find(filterByCardNumber).FirstOrDefaultAsync();
 
-                if (result == null)
+                if (user == null)
                 {
                     Console.WriteLine("User not found.");
                     return false;
                 }
 
-                string storedHashedPin = result["pin"].AsString;
+                string storedHashedPin = user["pin"].AsString;
 
                 bool isPinValid = BCrypt.Net.BCrypt.Verify(pinCode.ToString(), storedHashedPin);
 
@@ -108,12 +110,28 @@ namespace BankSimulator.Services
                     return false;
                 }
 
+                SaveUserIdToFile(user["_id"].AsString);
+
                 return true;
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error finding user: {ex.Message}");
                 return false;
+            }
+        }
+
+        private void SaveUserIdToFile(string userId)
+        {
+            string filePath = "UserId.txt";
+            try
+            {
+                File.WriteAllText(filePath, userId);
+                Console.WriteLine($"User ID saved to {filePath}.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An error occurred while saving the user ID: {ex.Message}");
             }
         }
     }
